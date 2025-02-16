@@ -252,7 +252,7 @@ const getUserRegistrationsOverTime = async (req, res) => {
       await user.save();
   
       // Construct reset URL
-      const resetURL = `https://backend-6ioq.onrender.com/reset-password/${resetToken}`; // Update to frontend URL
+      const resetURL = `http://localhost:3000/reset-password/${resetToken}`; // Update to frontend URL
   
       // Email content
       const mailOptions = {
