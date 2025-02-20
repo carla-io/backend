@@ -48,7 +48,7 @@ const register = async (req, res) => {
         // Generate verification token
         const verificationToken = jwt.sign({ email: user.email }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
-        const verificationLink = `https://backend-6ioq.onrender.com/api/auth/verify-email?token=${verificationToken}`;
+        const verificationLink = `https://192.168.175.237:4000/api/auth/verify-email?token=${verificationToken}`;
 
         const mailOptions = {
             from: process.env.MAILTRAP_HOST,
