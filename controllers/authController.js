@@ -318,6 +318,103 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const sendGraphEmail = async (req, res) => {
+  try {
+    const { email, image } = req.body;
+    if (!image) {
+      return res.status(400).json({ message: "No graph image provided" });
+    }
+
+    // Upload image to Cloudinary
+    const uploadResponse = await cloudinary.uploader.upload(image, {
+      folder: "graph_images",
+    });
+
+    if (!uploadResponse.secure_url) {
+      return res.status(500).json({ message: "Failed to upload image to Cloudinary" });
+    }
+
+    const mailOptions = {
+      from: process.env.GMAIL_USER,
+      to: email,
+      subject: "Your Requested Graph",
+      text: "Please find the graph link below:",
+      html: `<p>Please find your requested graph below:</p><br><a href="${uploadResponse.secure_url}" target="_blank">View Graph</a>`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ message: "Failed to send email" });
+      }
+      res.status(200).json({ message: "Graph sent successfully!", info });
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+const archiveUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find the user and update the isArchived field
+    const user = await User.findByIdAndUpdate(userId, { isArchived: true }, { new: true });
+
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, message: "User account archived successfully", data: user });
+} catch (error) {
+    console.error("Error archiving user:", error);
+    res.status(500).json({ success: false, message: "Server error", error });
+}
+}
+
+const restoreUser = async (req, res) => {
+
+  try {
+    const { userId } = req.params;
+
+    // Find the user and restore the account by setting isArchived to false
+    const user = await User.findByIdAndUpdate(userId, { isArchived: false }, { new: true });
+
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.json({ success: true, message: "User account restored successfully", data: user });
+} catch (error) {
+    console.error("Error restoring user:", error);
+    res.status(500).json({ success: false, message: "Server error", error });
+}
+
+}
+
+const getActiveUsers = async (req, res) => {
+  try {
+      const users = await User.find({ isArchived: false });
+
+      res.json({ success: true, data: users });
+  } catch (error) {
+      console.error("Error fetching active users:", error);
+      res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
+
+// Get all archived users
+const getArchivedUsers = async (req, res) => {
+  try {
+      const users = await User.find({ isArchived: true });
+
+      res.json({ success: true, data: users });
+  } catch (error) {
+      console.error("Error fetching archived users:", error);
+      res.status(500).json({ success: false, message: "Server error", error });
+  }
+};
 
 
 
@@ -332,4 +429,9 @@ module.exports = { register,
     getGradeLevelDistribution, 
     getAllUsers,
     requestPasswordReset,
-    resetPassword};
+    resetPassword,
+    sendGraphEmail,
+    archiveUser,
+    restoreUser,
+    getActiveUsers,
+    getArchivedUsers};

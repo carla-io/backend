@@ -54,6 +54,7 @@ const UserSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpires: Date, // New field
+    isArchived: { type: Boolean, default: false }
 
 });
 
